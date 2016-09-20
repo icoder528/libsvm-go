@@ -273,18 +273,8 @@ func (model *Model) readHeader(reader *bufio.Reader) error {
 
 	return fmt.Errorf("Fail to completely read header")
 }
-
-func (model *Model) ReadModel(file string) error {
-	f, err := os.Open(file)
-	if err != nil {
-		return fmt.Errorf("Fail to open file %s\n", file)
-	}
-
-	defer f.Close() // close f on method return
-
-	reader := bufio.NewReader(f)
-
-	if err := model.readHeader(reader); err != nil {
+func (model *Model) LoadModel(br *bufio.Reader) error {
+	if err := model.readHeader(br); err != nil {
 		return err
 	}
 
@@ -298,7 +288,7 @@ func (model *Model) ReadModel(file string) error {
 	model.sV = make([]int, l)
 	var i int = 0
 	for {
-		line, err := readline(reader) // read a line
+		line, err := readline(br) // read a line
 		if err != nil {
 			break
 		}
@@ -339,4 +329,14 @@ func (model *Model) ReadModel(file string) error {
 	}
 
 	return nil
+}
+func (model *Model) ReadModel(file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return fmt.Errorf("Fail to open file %s\n", file)
+	}
+
+	defer f.Close() // close f on method return
+
+	return model.LoadModel(bufio.NewReader(f))
 }
